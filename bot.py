@@ -1,15 +1,6 @@
-import os
-import sys
-import time
 import json
-from datetime import datetime, timedelta
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
+import time
+from datetime import datetime
 
 # Carregar configuração
 with open('config.json', 'r', encoding='utf-8') as f:
@@ -17,95 +8,17 @@ with open('config.json', 'r', encoding='utf-8') as f:
 
 class BarberBot:
     def __init__(self):
-        self.setup_driver()
-        self.ultima_msg = set()
+        self.agendamentos = []
         print("\n🤖 Bot Barbearia iniciado!")
         print(f"📍 {CONFIG['barbearia']['nome']}\n")
-    
-    def setup_driver(self):
-        """Configura Selenium"""
-        try:
-            options = webdriver.ChromeOptions()
-            options.add_argument('--start-maximized')
-            options.add_argument('user-data-dir=./whatsapp_session')
-            
-            service = Service(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=service, options=options)
-            
-            print("\n🌐 Abrindo WhatsApp Web...")
-            self.driver.get('https://web.whatsapp.com')
-            
-            print("\n" + "="*50)
-            print("📱 ESCANEIE O QR CODE COM WHATSAPP")
-            print("="*50)
-            print("\n1. Abra WhatsApp no celular")
-            print("2. Vá em Configurações > Aparelhos conectados")
-            print("3. Aponte câmera para o QR Code")
-            print("\nAguardando scan...\n")
-            
-            # Aguarda login
-            WebDriverWait(self.driver, 60).until(
-                EC.presence_of_element_located((By.XPATH, '//div[@contenteditable="true"]'))
-            )
-            
-            print("\n✅ Conectado! Bot pronto para receber mensagens.\n")
-            time.sleep(2)
-        
-        except Exception as e:
-            print(f"\n❌ Erro: {e}")
-            sys.exit(1)
-    
-    def get_messages(self):
-        """Obtém mensagens não processadas"""
-        try:
-            msgs = self.driver.find_elements(
-                By.XPATH,
-                '//div[contains(@class, "message-in")]'
-            )
-            
-            novas = []
-            for msg in msgs:
-                try:
-                    msg_id = msg.get_attribute('data-id')
-                    if msg_id and msg_id not in self.ultima_msg:
-                        texto = msg.find_element(
-                            By.XPATH,
-                            './/span[@class="_1wjpf"]'
-                        ).text
-                        novas.append({'id': msg_id, 'texto': texto})
-                        self.ultima_msg.add(msg_id)
-                except:
-                    pass
-            
-            return novas
-        except:
-            return []
-    
-    def send_message(self, texto):
-        """Envia mensagem"""
-        try:
-            campo = WebDriverWait(self.driver, 5).until(
-                EC.presence_of_element_located(
-                    (By.XPATH, '//div[@contenteditable="true"][@data-tab="1"]')
-                )
-            )
-            
-            campo.click()
-            time.sleep(0.3)
-            campo.send_keys(texto)
-            time.sleep(0.3)
-            campo.send_keys(Keys.CONTROL + Keys.ENTER)
-            
-            print(f"📤 Resposta enviada")
-            time.sleep(1)
-        except Exception as e:
-            print(f"Erro ao enviar: {e}")
+        print("⚠️  MODO SIMULAÇÃO (sem WhatsApp Web)")
+        print("Digite suas mensagens para testar:\n")
     
     def processar_msg(self, texto):
         """Processa mensagem e retorna resposta"""
         msg = texto.lower().strip()
         
-        if msg in ['oi', 'olá', 'ola', 'oiii']:
+        if msg in ['oi', 'olá', 'ola', 'oiii', 'e ai', '']:
             return self.menu_principal()
         elif msg == '1' or 'agendar' in msg:
             return self.agendar()
@@ -173,26 +86,23 @@ Digite o número da opção.
     
     def run(self):
         """Loop principal"""
-        print("🏪 Bot aguardando mensagens...\n")
+        print("🏪 Bot pronto para receber mensagens...\n")
+        print("=" * 50)
         
         try:
             while True:
-                msgs = self.get_messages()
+                usuario_input = input("\n📝 Você: ").strip()
                 
-                if msgs:
-                    for msg in msgs:
-                        texto = msg['texto']
-                        print(f"\n📨 [{datetime.now().strftime('%H:%M')}] Cliente: {texto}")
-                        
-                        resposta = self.processar_msg(texto)
-                        self.send_message(resposta)
+                if usuario_input.lower() == 'sair':
+                    print("\n❌ Bot encerrado.")
+                    break
                 
-                time.sleep(2)
+                resposta = self.processar_msg(usuario_input)
+                print(f"\n🤖 Bot:\n{resposta}")
+                print("\n" + "=" * 50)
         
         except KeyboardInterrupt:
             print("\n\n❌ Bot encerrado.")
-            self.driver.quit()
-            sys.exit(0)
 
 if __name__ == "__main__":
     bot = BarberBot()
