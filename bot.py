@@ -148,23 +148,26 @@ Digite o número da opção.
     def barbeiros(self):
         """Lista barbeiros"""
         texto = "👨‍💼 NOSSOS BARBEIROS:\n\n"
-        for b in CONFIG['barbeiros']:
-            texto += f"{b['nome']}\n📱 {b['telefone']}\n\n"
+        if isinstance(CONFIG.get('barbeiros'), list):
+            for b in CONFIG['barbeiros']:
+                texto += f"{b['nome']}\n📱 {b['telefone']}\n\n"
         return texto.strip()
     
     def precos(self):
         """Mostra preços"""
         texto = "💰 TABELA DE PREÇOS:\n\n"
-        for servico, preco in CONFIG['valores'].items():
-            texto += f"✂️ {servico.title()}: R$ {preco:.2f}\n"
+        if isinstance(CONFIG.get('valores'), dict):
+            for servico, preco in CONFIG['valores'].items():
+                texto += f"✂️ {servico.title()}: R$ {preco:.2f}\n"
         return texto.strip()
     
     def agendar(self):
         """Inicia agendamento"""
         texto = "📅 AGENDAR CORTE\n\n"
         texto += "Escolha o serviço:\n\n"
-        for i, (servico, preco) in enumerate(CONFIG['valores'].items(), 1):
-            texto += f"{i}. {servico.title()} - R$ {preco:.2f}\n"
+        if isinstance(CONFIG.get('valores'), dict):
+            for i, (servico, preco) in enumerate(CONFIG['valores'].items(), 1):
+                texto += f"{i}. {servico.title()} - R$ {preco:.2f}\n"
         texto += "\n(Responda com o número)\n\nOu fale com um atendente: " + CONFIG['barbearia']['telefone']
         return texto.strip()
     
