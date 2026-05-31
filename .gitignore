@@ -1,0 +1,11 @@
+# Sessão WhatsApp
+whatsapp_session/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+
+# IDE
+.vscode/
+.idea/
